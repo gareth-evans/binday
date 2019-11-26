@@ -17,3 +17,13 @@ steps:
     echo Add other tasks to build, test, and deploy your project.
     echo See https://aka.ms/yaml
   displayName: 'Run a multi-line script'
+- task: AzureFunctionApp@1
+  inputs:
+    azureSubscription: 'Curly Brackets(8feb9d10-ad97-45a6-bc5d-db391e6eaba7)'
+    appType: 'functionApp'
+    appName: 'BinDay20191125105139'
+    deployToSlotOrASE: true
+    resourceGroupName: 'cdsOG2HMCEPCKR77KS7BEPRI4VKF2RES32EN7JLERAHBR3VT2LX3J6Q-North-Central-US'
+    slotName: 'production'
+    package: '$(System.DefaultWorkingDirectory)/**/*.zip'
+    deploymentMethod: 'auto'
