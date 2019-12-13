@@ -2,13 +2,16 @@
 trigger:
 - master
 
+variables:
+    azureSubscription: 'Curly Brackets(8feb9d10-ad97-45a6-bc5d-db391e6eaba7)'
+    appName: 'BinDay20191125105139'
 pool:
-      vmImage: 'VS2017-Win2016'
+   vmImage: 'VS2017-Win2016'
 steps:
 - task: DotNetCoreCLI@2
   inputs:
-    command: 'publish'
-    arguments: '-c Release'
+    command: 'custom'
+    arguments: 'publish -c Release'
     projects: 'binday.sln'
 - task: ArchiveFiles@2
   displayName: "Archive files"
