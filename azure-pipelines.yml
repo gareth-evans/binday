@@ -16,7 +16,7 @@ steps:
 - task: ArchiveFiles@2
   displayName: "Archive files"
   inputs:
-    rootFolderOrFile: "$(System.DefaultWorkingDirectory)/**/bin"
+    rootFolderOrFile: "$(System.DefaultWorkingDirectory)/BinDay/bin/Release/netcoreapp2.1/bin"
     includeRootFolder: false
     archiveFile: "$(System.DefaultWorkingDirectory)/build$(Build.BuildId).zip"
 - task: AzureFunctionApp@1
