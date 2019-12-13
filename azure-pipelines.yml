@@ -5,17 +5,17 @@ trigger:
 pool:
       vmImage: 'VS2017-Win2016'
 steps:
-- script: |
-    dotnet restore
-    dotnet build --configuration Release
 - task: DotNetCoreCLI@2
   inputs:
-    command: publish
-    arguments: '--configuration Release --output publish_output'
-    projects: '*.csproj'
-    publishWebProjects: false
-    modifyOutputPath: true
-    zipAfterPublish: false
+    command: 'build'
+    projects: 'binday.sln'
+- task: AzureFunctionApp@1
+  inputs:
+    azureSubscription: 'Curly Brackets(8feb9d10-ad97-45a6-bc5d-db391e6eaba7)'
+    appType: 'functionApp'
+    appName: 'BinDay20191125105139'
+    package: '$(System.DefaultWorkingDirectory)/**/*.zip'
+    deploymentMethod: 'auto'
 - task: ArchiveFiles@2
   displayName: "Archive files"
   inputs:
