@@ -35,4 +35,4 @@ steps:
     connectionType: 'AzureRM'
     azureSubscription: "$(azureSubscription)"
     appType: 'functionApp'
-    webAppName: "$(functionappName)"
+    webAppName: "$(appName)"
