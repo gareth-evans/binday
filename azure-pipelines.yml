@@ -7,27 +7,32 @@ variables:
     appName: 'BinDay20191125105139'
 pool:
    vmImage: 'VS2017-Win2016'
+   
 steps:
+- script: |
+    dotnet restore
+    dotnet build --configuration Release
 - task: DotNetCoreCLI@2
   inputs:
-    command: 'build'
-    arguments: '-c Release'
-    projects: 'binday.sln'
+    command: publish
+    arguments: '--configuration Release --output publish_output'
+    projects: '*.csproj'
+    publishWebProjects: false
+    modifyOutputPath: true
+    zipAfterPublish: false
 - task: ArchiveFiles@2
   displayName: "Archive files"
   inputs:
-    rootFolderOrFile: "$(System.DefaultWorkingDirectory)/BinDay/bin/Release/netcoreapp2.1/bin"
+    rootFolderOrFile: "$(System.DefaultWorkingDirectory)/publish_output/s"
     includeRootFolder: false
     archiveFile: "$(System.DefaultWorkingDirectory)/build$(Build.BuildId).zip"
-- task: AzureFunctionApp@1
-  inputs:
-    azureSubscription: 'Curly Brackets(8feb9d10-ad97-45a6-bc5d-db391e6eaba7)'
-    appType: 'functionApp'
-    appName: 'BinDay20191125105139'
-    package: '$(System.DefaultWorkingDirectory)/**/*.zip'
-    deploymentMethod: 'auto'
-
 - task: PublishBuildArtifacts@1
   inputs:
     PathtoPublish: '$(System.DefaultWorkingDirectory)/build$(Build.BuildId).zip'
-    name: 'drop'
+    ArtifactName: 'drop'
+- task: AzureRmWebAppDeployment@4
+  inputs:
+    connectionType: 'AzureRM'
+    azureSubscription: "$(azureSubscription)"
+    appType: 'functionApp'
+    webAppName: "$(functionappName)"
