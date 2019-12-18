@@ -10,6 +10,7 @@ using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace BinDay
 {
@@ -35,6 +36,9 @@ namespace BinDay
             ILogger log)
         {
             var json = await req.ReadAsStringAsync();
+
+            var xx = JsonConvert.DeserializeObject<JObject>(json);
+
             var skillRequest = JsonConvert.DeserializeObject<SkillRequest>(json);
 
             var requestType = skillRequest.GetRequestType();
