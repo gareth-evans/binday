@@ -24,18 +24,15 @@ namespace BinDay
             _southBucksCalendar = new HardcodedSouthBucksCalendar();
         }
 
-
         private readonly HardcodedSouthBucksCalendar _southBucksCalendar;
 
         public async Task<BinInfo> GetBinInfoAsync(string postcode, DateTime dateTime)
         {
-            // get bin week
-
             var binWeek = _southBucksCalendar.BinDays.SingleOrDefault(week => week.dateRange.IsInRange(dateTime.Date));
             var binDayOfWeek = await GetBinDayForPostcodeAsync(postcode);
             var date = DateTime.Now.Date.GetDateOfTheNext(binDayOfWeek);
-            
-            // swap date if in substitute list
+
+            if (_southBucksCalendar.DayChanges.ContainsKey(date)) date = _southBucksCalendar.DayChanges[date];
 
             return new BinInfo
             {

@@ -18,7 +18,9 @@ namespace BinDay
                 .AddHttpClient()
                 .AddSingleton<SouthBucksBinDayResolver>()
                 .AddSingleton<ITableStoragePostcodeResolver, TableStoragePostcodeResolver>()
-                .AddTransient<IUserPostcodeRetriever<SkillRequest>, AlexaUserPostcodeRetriever>();
+                .AddTransient<IUserPostcodeRetriever<SkillRequest>, AlexaUserPostcodeRetriever>()
+                .AddSingleton<IDateProvider, DateProvider>()
+                .AddSingleton<IDateFormatter, DateFormatter>();
 
             services.AddHttpClient<IAlexaCustomerProfileClient, AlexaCustomerProfileClient>();
         }
