@@ -1,14 +1,11 @@
-﻿using System;
-using System.Net.Http;
+﻿using System.Net.Http;
 using System.Net.Http.Formatting;
 using System.Threading.Tasks;
 using Alexa.NET.Request;
 using Alexa.NET.Request.Type;
 using LightBDD.Framework.Scenarios;
 using LightBDD.NUnit3;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Shouldly;
+using Tests.Acceptance.Alexa;
 
 namespace Tests.Acceptance
 {
@@ -27,27 +24,10 @@ namespace Tests.Acceptance
         {
             using (var client = CreateClient())
             {
-                var skillRequest = new SkillRequest
-                {
-                    Context = new Context(),
-                    Session = new Session(),
-                    Version = "1",
-                    Request = new LaunchRequest { Type = "LaunchRequest" }
-                };
+                var skillRequest = new AlexaLaunchRequestBuilder().Create();
 
-               Response = await client.PostAsync("api/alexa", new ObjectContent(typeof(SkillRequest), skillRequest, new JsonMediaTypeFormatter()));
+                Response = await client.PostAsync("api/alexa", skillRequest);
             }
         }
-
-        private async Task Then_I_should_receive_the_response_EXPECTED(string expected)
-        {
-            var json = await Response.Content.ReadAsStringAsync();
-            var response = JsonConvert.DeserializeObject<JObject>(json);
-            var responseText = response["response"]["outputSpeech"]["text"].Value<string>();
-
-            responseText.ShouldBe(expected);
-        }
     }
-
-
 }

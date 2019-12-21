@@ -1,8 +1,12 @@
 ﻿using System.Net.Http;
+using System.Threading.Tasks;
 using BinDay;
 using LightBDD.NUnit3;
 using Microsoft.AspNetCore.TestHost;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using NUnit.Framework;
+using Shouldly;
 
 namespace Tests.Acceptance
 {
@@ -18,7 +22,6 @@ namespace Tests.Acceptance
             Response = null;
         }
 
-
         protected AzureFunctionFixture()
         {
             var applicationFactory = new TestWebApplicationFactory<Startup>();
@@ -26,5 +29,14 @@ namespace Tests.Acceptance
         }
 
         protected HttpClient CreateClient() => _server.CreateClient();
+
+        protected async Task Then_I_should_receive_the_response_EXPECTED(string expected)
+        {
+            var json = await Response.Content.ReadAsStringAsync();
+            var response = JsonConvert.DeserializeObject<JObject>(json);
+            var responseText = response["response"]["outputSpeech"]["text"].Value<string>();
+
+            responseText.ShouldBe(expected);
+        }
     }
 }

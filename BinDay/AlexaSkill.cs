@@ -68,7 +68,7 @@ namespace BinDay
                 }
                 else if (intentName == "AMAZON.CancelIntent" || intentName == "AMAZON.StopIntent")
                 {
-                    response = ResponseBuilder.Tell($"OK, I'll just take myself out");
+                    response = ResponseBuilder.Tell("OK, I'll just take myself out");
                     response.Response.ShouldEndSession = true;
                 }
             }
