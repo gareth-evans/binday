@@ -54,7 +54,9 @@ namespace BinDay
             }
             else if (skillRequest.Request is IntentRequest intentRequest)
             {
-                if (intentRequest.Intent.Name == "whatbinisit")
+                var intentName = intentRequest.Intent.Name;
+
+                if (intentName == "whatbinisit")
                 {
                     var userPostcode = await _userPostcodeRetriever.GetPostcodeAsync(skillRequest);
                     var dayOfWeek = await _binDayResolver.GetBinInfoAsync(userPostcode, DateTime.Now);
@@ -62,6 +64,11 @@ namespace BinDay
                     var friendlyDayDescription = _dateFormatter.CreateFriendlyDescription(dayOfWeek.Date);
 
                     response = ResponseBuilder.Tell($"It's {dayOfWeek.Description} bin {friendlyDayDescription}");
+                    response.Response.ShouldEndSession = true;
+                }
+                else if (intentName == "AMAZON.CancelIntent" || intentName == "AMAZON.StopIntent")
+                {
+                    response = ResponseBuilder.Tell($"OK, I'll just take myself out");
                     response.Response.ShouldEndSession = true;
                 }
             }
