@@ -26,52 +26,62 @@ namespace BinDay
             IDateFormatter dateFormatter)
         {
             _binDayResolver = binDayResolver ?? throw new ArgumentNullException(nameof(binDayResolver));
-            _userPostcodeRetriever = userPostcodeRetriever ?? throw new ArgumentNullException(nameof(userPostcodeRetriever));
+            _userPostcodeRetriever =
+                userPostcodeRetriever ?? throw new ArgumentNullException(nameof(userPostcodeRetriever));
             _dateFormatter = dateFormatter;
         }
 
         [FunctionName("Alexa")]
         public async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)] HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)]
+            HttpRequest req,
             ILogger log)
         {
-            await req.EnsureValidAlexaSignatureAsync();
-
-            var json = await req.ReadAsStringAsync();
-
-            var skillRequest = JsonConvert.DeserializeObject<SkillRequest>(json);
-
-            SkillResponse response = null;
-
-            if (skillRequest.Request is LaunchRequest launchRequest)
+            try
             {
-                response = ResponseBuilder
-                    .Tell("Welcome to Bin Day!");
+                await req.EnsureValidAlexaSignatureAsync();
 
-                response.Response.ShouldEndSession = false;
+                var json = await req.ReadAsStringAsync();
+
+                var skillRequest = JsonConvert.DeserializeObject<SkillRequest>(json);
+
+                SkillResponse response = null;
+
+                if (skillRequest.Request is LaunchRequest launchRequest)
+                {
+                    response = ResponseBuilder
+                        .Tell("Welcome to Bin Day!");
+
+                    response.Response.ShouldEndSession = false;
+                }
+                else if (skillRequest.Request is IntentRequest intentRequest)
+                {
+                    var intentName = intentRequest.Intent.Name;
+
+                    if (intentName == "whatbinisit")
+                    {
+                        var userPostcode = await _userPostcodeRetriever.GetPostcodeAsync(skillRequest);
+                        var dayOfWeek = await _binDayResolver.GetBinInfoAsync(userPostcode, DateTime.Now);
+
+                        var friendlyDayDescription = _dateFormatter.CreateFriendlyDescription(dayOfWeek.Date);
+
+                        response = ResponseBuilder.Tell($"It's {dayOfWeek.Description} bin {friendlyDayDescription}");
+                        response.Response.ShouldEndSession = true;
+                    }
+                    else if (intentName == "AMAZON.CancelIntent" || intentName == "AMAZON.StopIntent")
+                    {
+                        response = ResponseBuilder.Tell("OK, I'll just take myself out");
+                        response.Response.ShouldEndSession = true;
+                    }
+                }
+
+                return new OkObjectResult(response);
             }
-            else if (skillRequest.Request is IntentRequest intentRequest)
+            catch (Exception ex)
             {
-                var intentName = intentRequest.Intent.Name;
-
-                if (intentName == "whatbinisit")
-                {
-                    var userPostcode = await _userPostcodeRetriever.GetPostcodeAsync(skillRequest);
-                    var dayOfWeek = await _binDayResolver.GetBinInfoAsync(userPostcode, DateTime.Now);
-
-                    var friendlyDayDescription = _dateFormatter.CreateFriendlyDescription(dayOfWeek.Date);
-
-                    response = ResponseBuilder.Tell($"It's {dayOfWeek.Description} bin {friendlyDayDescription}");
-                    response.Response.ShouldEndSession = true;
-                }
-                else if (intentName == "AMAZON.CancelIntent" || intentName == "AMAZON.StopIntent")
-                {
-                    response = ResponseBuilder.Tell("OK, I'll just take myself out");
-                    response.Response.ShouldEndSession = true;
-                }
+                log.LogCritical(ex.Message);
+                throw;
             }
-
-            return new OkObjectResult(response);
         }
     }
 }
