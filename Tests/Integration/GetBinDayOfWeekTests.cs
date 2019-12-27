@@ -16,7 +16,7 @@ namespace Tests
 
         [TestCase("HP9 2ET", DayOfWeek.Friday)]
         [TestCase("SL9 7EN", DayOfWeek.Wednesday)]
-        public async Task GetBinDayOfWeek(string postcode, DayOfWeek expectedDay)
+        public Task GetBinDayOfWeek(string postcode, DayOfWeek expectedDay)
         {
             throw new NotImplementedException();
 

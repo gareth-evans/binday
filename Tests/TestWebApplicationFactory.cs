@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -12,6 +13,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Moq;
 
@@ -22,14 +24,42 @@ namespace Tests
     {
         private readonly IWebHostBuilder _webHostBuilder;
 
+
+        private void CreateHost()
+        {
+            var host = new HostBuilder()
+                .ConfigureWebJobs((ctx, builder) =>
+                {
+                    builder.AddHttp();
+
+                    var functionsHostBuilder = new TestFunctionsHostBuilder(builder.Services);
+
+                    var startup = new TStartup();
+
+                    startup.Configure(functionsHostBuilder);
+
+                })
+                .Build();
+
+            var jobHost = host.Services.GetService(typeof(IJobHost)) as JobHost;
+
+            var mi = typeof(AlexaSkill).GetMethod("Run");
+
+            jobHost.CallAsync(mi, null);
+
+            jobHost.CallAsync("Run", null).Wait();
+
+            host.StopAsync().Wait();
+        }
+
         public TestWebApplicationFactory()
         {
             _webHostBuilder = new WebHostBuilder();
 
-            var functionsHostBuilder = new TestFunctionsHostBuilder(new ServiceCollection());
+           var functionsHostBuilder = new TestFunctionsHostBuilder(new ServiceCollection());
 
             var startup = new TStartup();
-
+            
             startup.Configure(functionsHostBuilder);
 
             var loggerMock = new Mock<ILogger>();

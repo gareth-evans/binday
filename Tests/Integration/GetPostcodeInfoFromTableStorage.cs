@@ -12,7 +12,7 @@ namespace Tests
     public class GetPostcodeInfoFromTableStorage
     {
         [Test]
-        public async Task ShouldGetPostcodeInfo()
+        public void ShouldGetPostcodeInfo()
         {
             var logger = Mock.Of<ILogger<TableStoragePostcodeResolver>>();
             var sut = new TableStoragePostcodeResolver(logger);

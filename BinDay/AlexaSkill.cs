@@ -35,13 +35,11 @@ namespace BinDay
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)] HttpRequest req,
             ILogger log)
         {
+            await req.EnsureValidAlexaSignatureAsync();
+
             var json = await req.ReadAsStringAsync();
 
-            var xx = JsonConvert.DeserializeObject<JObject>(json);
-
             var skillRequest = JsonConvert.DeserializeObject<SkillRequest>(json);
-
-            var requestType = skillRequest.GetRequestType();
 
             SkillResponse response = null;
 
