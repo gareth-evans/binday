@@ -4,7 +4,7 @@ trigger:
 
 variables:
     azureSubscription: 'Curly Brackets(8feb9d10-ad97-45a6-bc5d-db391e6eaba7)'
-    appName: 'BinDay20191125105139'
+    appName: 'BinDay-Production'
 pool:
    vmImage: 'VS2017-Win2016'
    
