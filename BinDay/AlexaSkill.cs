@@ -37,6 +37,8 @@ namespace BinDay
             HttpRequest req,
             ILogger log)
         {
+            log.Log(LogLevel.Information, "Received Alexa request");
+
             try
             {
                 await req.EnsureValidAlexaSignatureAsync();
@@ -61,18 +63,38 @@ namespace BinDay
                     if (intentName == "whatbinisit")
                     {
                         var userPostcode = await _userPostcodeRetriever.GetPostcodeAsync(skillRequest);
-                        var dayOfWeek = await _binDayResolver.GetBinInfoAsync(userPostcode, DateTime.Now);
 
-                        var friendlyDayDescription = _dateFormatter.CreateFriendlyDescription(dayOfWeek.Date);
+                        if (userPostcode == null)
+                        {
+                            response = ResponseBuilder.Tell($"Sorry I can't check your collection schedule without your postcode, and I don't seem to have permission to access it." +
+                                                            $" Please check the permissions I have.");
+                            response.Response.ShouldEndSession = true;
+                        }
+                        else
+                        {
+                            var dayOfWeek = await _binDayResolver.GetBinInfoAsync(userPostcode, DateTime.Now);
 
-                        response = ResponseBuilder.Tell($"It's {dayOfWeek.Description} bin {friendlyDayDescription}");
-                        response.Response.ShouldEndSession = true;
+                            var friendlyDayDescription = _dateFormatter.CreateFriendlyDescription(dayOfWeek.Date);
+
+                            response = ResponseBuilder.Tell($"It's {dayOfWeek.Description} bin {friendlyDayDescription}");
+                            response.Response.ShouldEndSession = true;
+                        }
                     }
-                    else if (intentName == "AMAZON.CancelIntent" || intentName == "AMAZON.StopIntent")
+                    else if (intentName == BuiltInIntent.Cancel || intentName == BuiltInIntent.Stop)
                     {
                         response = ResponseBuilder.Tell("OK, I'll just take myself out");
                         response.Response.ShouldEndSession = true;
                     }
+                    else if (intentName == BuiltInIntent.Help)
+                    {
+                        response = ResponseBuilder.Tell("You can ask me which bin it is.");
+                        response.Response.ShouldEndSession = false;
+                    }
+                }
+                else if (skillRequest.Request is SessionEndedRequest sessionEndedRequest)
+                {
+                    response = ResponseBuilder.Tell("OK, I'll just take myself out");
+                    response.Response.ShouldEndSession = true;
                 }
 
                 return new OkObjectResult(response);

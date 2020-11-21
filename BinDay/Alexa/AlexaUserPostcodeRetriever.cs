@@ -21,7 +21,7 @@ namespace BinDay.Alexa
                 request.Context.System.Device.DeviceID
             );
 
-            return regionAndPostcode.PostalCode;
+            return regionAndPostcode?.PostalCode;
         }
     }
 }

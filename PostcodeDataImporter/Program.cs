@@ -13,7 +13,7 @@ namespace PostcodeDataImporter
 {
     class Program
     {
-        private const string BasePath = @"C:\Users\graz1\Downloads\codepo_gb";
+        private const string BasePath = @"C:\dev\codepo_gb";
 
         public static async Task Main(string[] args)
         {
@@ -22,6 +22,7 @@ namespace PostcodeDataImporter
             var districts = GetDistricts().ToDictionary(x => x.Code, x => x.Name);
 
             var tableClient = CloudStorageAccount.Parse("DefaultEndpointsProtocol=https;AccountName=binday;AccountKey=nR7ts25+CvJQuq5PSUb5H3bMQz8Awi82b2LenQnrWnFpwLYt8DrPeOjKqxgYTQCK+AYtco5nMN0t8lbMjIzjOg==;EndpointSuffix=core.windows.net").CreateCloudTableClient();
+            //var tableClient = CloudStorageAccount.Parse("UseDevelopmentStorage=true").CreateCloudTableClient();
 
             var tableRef = tableClient.GetTableReference("Postcodes");
             var postcodeEntities = GetPostcodeEntities(districts).ToArray();
@@ -29,6 +30,29 @@ namespace PostcodeDataImporter
             foreach (var batchSet in postcodeEntities.GroupBy(x => x.PartitionKey).SelectMany(x => x.InSetsOf(100)).InSetsOf(30))
             {
                 IList<Task<TableBatchResult>> batchTasks = new List<Task<TableBatchResult>>();
+
+                Parallel.ForEach(batchSet, batch =>
+                {
+                    var batchOperation = new TableBatchOperation();
+
+                    foreach (var postcodeEntity in batch)
+                    {
+                        batchOperation.Add(TableOperation.InsertOrReplace(postcodeEntity));
+                    }
+
+                    //batchTasks.Add(
+                    tableRef.ExecuteBatchAsync(batchOperation)
+                        .ContinueWith(t =>
+                        {
+                            Console.WriteLine(
+                                $"Inserted {batch[0].Postcode}-{batch[batch.Count - 1].Postcode}");
+                            return t.Result;
+                        }).GetAwaiter().GetResult();
+                        //)
+                        ;
+
+                });
+
 
                 foreach (var batch in batchSet)
                 {
@@ -39,18 +63,20 @@ namespace PostcodeDataImporter
                         batchOperation.Add(TableOperation.InsertOrReplace(postcodeEntity));
                     }
 
-                    batchTasks.Add(
-                        tableRef.ExecuteBatchAsync(batchOperation)
+                    //batchTasks.Add(
+                     await  tableRef.ExecuteBatchAsync(batchOperation)
                             .ContinueWith(t =>
                             {
                                 Console.WriteLine(
                                         $"Inserted {batch[0].Postcode}-{batch[batch.Count - 1].Postcode}");
                                 return t.Result;
-                            }));
+                            })
+                        //)
+                        ;
             
                 }
 
-                await Task.WhenAll(batchTasks);
+                //await Task.WhenAll(batchTasks);
             }
 
             Console.ReadLine();

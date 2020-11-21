@@ -6,6 +6,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Codelist.xlsx" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Codelist.xlsx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="ExcelDataReader" Version="3.6.0" />
     <!--<PackageReference Include="WindowsAzure.Storage" Version="9.3.3" />-->
     <PackageReference Include="Microsoft.Azure.Cosmos.Table" Version="1.0.6" />
